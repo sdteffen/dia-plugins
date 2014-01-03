@@ -1,12 +1,10 @@
-# PyDia Simple Scale
-# Copyright (c) 2003, Hans Breuer <hans@breuer.org>
-#
-# Experimental scaleing (selected) Objects via property api
+# PyDia line length calculation
+# Copyright (c) 2003 Hans Breuer <hans@breuer.org>
+# Copyright (c) 2013 Neil Hellfeldt <hellfeldt@esteem.com>
 #
 # Known Issues:
-#  - HANDLE_NON_MOVEABLE ?
-#  - bezier control points
-#  - unsizeable objects (or sizeable via multiple text size changing, e.g. UML Class)
+#  - Polyline and Zigzagline handling
+#  - Handle multi-selection
 #
 
 #  This program is free software; you can redistribute it and/or modify
@@ -26,8 +24,6 @@
 import dia
 import string
 import math
-
-#data = dia.active_display().diagram
 
 class CLengthDialog :
   def __init__(self, d, data) :
@@ -76,15 +72,6 @@ class CLengthDialog :
   def on_delete (self, *args) :
     self.win.destroy ()
     
-def dump_o(name,o,depth):
-  s_str=""
-  for a in dir(o) :
-    if hasattr(o,a) :
-      s_str += name+".%s = %s\n" % (a,getattr(o,a))
-      if depth != 0:
-        s_str += dump_o(name+"."+a,getattr(o,a),depth-1)
-  return s_str
-
 def get_selected_line_length(data) :
   s_str = ""
   objs = data.get_sorted_selected()
