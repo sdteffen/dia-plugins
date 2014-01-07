@@ -2,10 +2,6 @@
 # Copyright (c) 2003 Hans Breuer <hans@breuer.org>
 # Copyright (c) 2013 Neil Hellfeldt <hellfeldt@esteem.com>
 #
-# Known Issues:
-#  - Polyline and Zigzagline handling
-#  - Handle multi-selection
-#
 
 #  This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,41 +67,69 @@ class CLengthDialog :
   
   def on_delete (self, *args) :
     self.win.destroy ()
-    
+
+def get_p2p_length(x1,x2,y1,y2) :
+  llen = 0
+  if x1 == None or x2 == None or y1 == None or y2 == None :
+    return llen
+  
+  x_len = math.fabs(x1 - x2)
+  y_len = math.fabs(y1 - y2)
+  
+  if x_len == 0 or y_len == 0 :
+    llen = x_len + y_len
+  else :
+    llen = math.sqrt(math.pow(y_len,2) + math.pow(x_len,2))
+  return llen
+
+def get_multi_p2p_legnth(pts) :
+  llen = 0
+  x1 = None
+  x2 = None
+  y1 = None
+  y2 = None
+  for p in pts :
+    x2 = p[0]
+    y2 = p[1]
+    llen += get_p2p_length(x1,x2,y1,y2)
+    x1 = x2
+    y1 = y2
+  return llen
+
+def get_standard_line_length(o) :
+  x1 = o.properties['start_point'].value[0]
+  x2 = o.properties['end_point'].value[0]
+  y1 = o.properties['start_point'].value[1]
+  y2 = o.properties['end_point'].value[1]
+  return get_p2p_length(x1,x2,y1,y2)
+  
+def get_zigzag_line_length(o) :
+  return get_multi_p2p_legnth(o.properties['orth_points'].value)
+
+def get_poly_line_length(o):
+  return get_multi_p2p_legnth(o.properties['poly_points'].value)
+
 def get_selected_line_length(data) :
+  total_len = 0
   s_str = ""
   objs = data.get_sorted_selected()
   if len(objs) == 0:
     return "No line selected"
-  if len(objs) > 1:
-    return "Only select 1 please"
   for o in objs :
     if hasattr(o,"properties") :
       if o.properties.has_key ('start_point') and o.properties.has_key ('end_point') :
-        break
-      return "Object is not a line"
+        total_len += get_standard_line_length(o)
+      elif o.properties.has_key ('orth_points') :
+        total_len += get_zigzag_line_length(o)
+      elif o.properties.has_key ('poly_points') :
+        total_len += get_poly_line_length(o)
+      else :
+        return "Object is not a known line type"
     else :
       return "Object does not have properties"
-    
-  for o in objs :
-    x1 = o.properties['start_point'].value[0]
-    x2 = o.properties['end_point'].value[0]
-    
-    y1 = o.properties['start_point'].value[1]
-    y2 = o.properties['end_point'].value[1]
-    
-    x_len = math.fabs(x1 - x2)
-    y_len = math.fabs(y1 - y2)
-        
-    if x_len == 0 or y_len == 0 :
-      llen = x_len + y_len
-      s_str += "%s" % llen
-    else :
-      s_str += "%s" % math.sqrt(math.pow(y_len,2) + math.pow(x_len,2))
-
-    return s_str
+  return "%s" % total_len
 
 def GetSelectedLineLength(data, flags) :
   dlg = CLengthDialog(dia.active_display().diagram,data)
   
-dia.register_action ("GetSelectLineLength", "Get Select Line Length","/DisplayMenu/Objects/GetSelectLineLength",GetSelectedLineLength)
+dia.register_action ("GetSelectLineLength", "Get Selected Line(s) Length","/DisplayMenu/Objects/GetSelectLineLength",GetSelectedLineLength)
