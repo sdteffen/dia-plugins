@@ -13,6 +13,7 @@ Plugins
 -------
 
 * [getlength.py](src/getlength.py) Calculate length of selected line
+* [dia_rotate.py](src/dia_rotate.py) Rotate basic Dia objects. [Learn more](http://dia-installer.de/doc/rotation.html#rotation_plugin)
 * [dia_orgchart.py](src/dia_orgchart.py) Draw organization charts. [Learn more](http://dia-installer.de/doc/organization_chart.html.en)
 
 Requirements
